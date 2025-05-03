@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     log.debug("Loading user details for: {}", usernameOrEmail);
 
     // Пошук користувача за іменем користувача або електронною поштою
-    User user = userRepository.findByUsernameOrEmailWithNativeLanguage(usernameOrEmail)
+    User user = userRepository.findByUsernameOrEmail(usernameOrEmail)
             .orElseThrow(() -> {
               log.error("User not found with username or email: {}", usernameOrEmail);
               return new UsernameNotFoundException("User not found with username or email: " + usernameOrEmail);

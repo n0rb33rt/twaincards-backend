@@ -18,9 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * Конфігурація безпеки Spring Security
- */
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -30,20 +28,13 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final UserDetailsService userDetailsService;
 
-  /**
-   * Конфігурація ланцюга фільтрів безпеки
-   */
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http
-            .csrf().disable()
+            .cors().and().csrf().disable()
             .authorizeHttpRequests(auth -> auth
-                    // Публічні endpoints
-                    .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                    .requestMatchers("/api/languages/enabled").permitAll()
-                    .requestMatchers("/api/collections/public/**").permitAll()
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    // Захищені endpoints
+                    .requestMatchers("/api/auth/**", "/api/v1/confirm").permitAll()
                     .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -54,17 +45,13 @@ public class SecurityConfig {
             .build();
   }
 
-  /**
-   * Енкодер паролів
-   */
+
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
-  /**
-   * Authentication provider
-   */
+
   @Bean
   public AuthenticationProvider authenticationProvider() {
     DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -73,9 +60,7 @@ public class SecurityConfig {
     return authProvider;
   }
 
-  /**
-   * Менеджер автентифікації
-   */
+
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
     return config.getAuthenticationManager();

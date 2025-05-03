@@ -10,9 +10,6 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Сутність, що зберігає статистику навчання користувача
- */
 @Entity
 @Table(name = "user_statistics")
 @Data
@@ -37,10 +34,6 @@ public class UserStatistics {
   @Builder.Default
   private Integer learnedCards = 0;
 
-  @Column(name = "total_study_time_minutes")
-  @Builder.Default
-  private Integer totalStudyTimeMinutes = 0;
-
   @Column(name = "learning_streak_days")
   @Builder.Default
   private Integer learningStreakDays = 0;
@@ -52,10 +45,6 @@ public class UserStatistics {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
-  /**
-   * Розрахувати відсоток вивчених карток
-   * @return відсоток вивчених карток або 0, якщо карток немає
-   */
   @Transient
   public Double getCompletionPercentage() {
     if (totalCards == 0) {

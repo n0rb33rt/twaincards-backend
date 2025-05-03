@@ -10,9 +10,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Сутність, що представляє колекцію карток для вивчення
- */
+
 @Entity
 @Table(name = "collections")
 @Data
@@ -43,15 +41,13 @@ public class Collection {
   @JoinColumn(name = "target_language_id", nullable = false)
   private Language targetLanguage;
 
-  @Column(name = "is_public")
-  private Boolean isPublic;
-
-  @Column(name = "is_default")
-  private Boolean isDefault;
-
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
+
+
+  @Column(name = "is_public")
+  private Boolean isPublic;
 
   @UpdateTimestamp
   @Column(name = "updated_at")
@@ -63,23 +59,12 @@ public class Collection {
   @Builder.Default
   private Set<Card> cards = new HashSet<>();
 
-  /**
-   * Додати картку до колекції
-   *
-   * @param card картка для додавання
-   * @return додана картка
-   */
   public Card addCard(Card card) {
     cards.add(card);
     card.setCollection(this);
     return card;
   }
 
-  /**
-   * Видалити картку з колекції
-   *
-   * @param card картка для видалення
-   */
   public void removeCard(Card card) {
     cards.remove(card);
     card.setCollection(null);

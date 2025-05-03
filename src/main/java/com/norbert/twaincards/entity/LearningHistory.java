@@ -1,17 +1,15 @@
 package com.norbert.twaincards.entity;
 
+import com.norbert.twaincards.entity.enumeration.ActionType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * Сутність, що представляє історію взаємодії користувача з картками
- */
 @Entity
 @Table(name = "learning_history")
 @Data
@@ -39,40 +37,11 @@ public class LearningHistory {
   @Column(name = "is_correct")
   private Boolean isCorrect;
 
-  @Column(name = "response_time_ms")
-  private Integer responseTimeMs;
-
   @CreationTimestamp
   @Column(name = "performed_at", updatable = false)
   private LocalDateTime performedAt;
 
-  /**
-   * Типи дій над картками
-   */
-  public enum ActionType {
-    /**
-     * Створення картки
-     */
-    CREATE,
-
-    /**
-     * Перегляд картки
-     */
-    VIEW,
-
-    /**
-     * Повторення картки
-     */
-    REVIEW,
-
-    /**
-     * Редагування картки
-     */
-    EDIT,
-
-    /**
-     * Видалення картки
-     */
-    DELETE
-  }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_session_id")
+  private StudySession studySession;
 }

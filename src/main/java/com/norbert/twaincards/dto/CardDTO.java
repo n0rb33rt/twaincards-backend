@@ -40,12 +40,6 @@ public class CardDTO {
   @Size(max = 1000, message = "Приклад використання повинен містити не більше 1000 символів")
   private String exampleUsage;
 
-  @Size(max = 255, message = "URL зображення повинен містити не більше 255 символів")
-  private String imageUrl;
-
-  @Size(max = 255, message = "URL аудіо повинен містити не більше 255 символів")
-  private String audioUrl;
-
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
@@ -53,16 +47,13 @@ public class CardDTO {
   @Builder.Default
   private Set<TagDTO> tags = new HashSet<>();
 
-  // Інформація про вивчення
   private String learningStatus;
   private Integer repetitionCount;
   private Integer correctAnswers;
   private Integer incorrectAnswers;
   private LocalDateTime nextReviewDate;
 
-  /**
-   * DTO для створення нової картки з мінімальними даними
-   */
+
   @Data
   @Builder
   @NoArgsConstructor

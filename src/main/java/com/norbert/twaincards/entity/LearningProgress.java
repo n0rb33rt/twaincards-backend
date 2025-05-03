@@ -1,17 +1,15 @@
 package com.norbert.twaincards.entity;
 
+import com.norbert.twaincards.entity.enumeration.LearningStatus;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Сутність, що представляє прогрес вивчення картки користувачем
- */
 @Entity
 @Table(name = "learning_progress", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "card_id"})
@@ -61,28 +59,4 @@ public class LearningProgress {
   @Column(name = "last_reviewed_at")
   private LocalDateTime lastReviewedAt;
 
-  /**
-   * Статуси карток у процесі вивчення
-   */
-  public enum LearningStatus {
-    /**
-     * Нова картка, яку користувач ще не вивчав
-     */
-    NEW,
-
-    /**
-     * Картка в процесі вивчення
-     */
-    LEARNING,
-
-    /**
-     * Картка на повторенні
-     */
-    REVIEW,
-
-    /**
-     * Картка, яку користувач добре знає
-     */
-    KNOWN
-  }
 }

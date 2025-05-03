@@ -10,9 +10,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Сутність, що представляє картку для вивчення
- */
 @Entity
 @Table(name = "cards")
 @Data
@@ -35,17 +32,8 @@ public class Card {
   @Column(name = "back_text", nullable = false)
   private String backText;
 
-  @Column(name = "phonetic_text")
-  private String phoneticText;
-
   @Column(name = "example_usage")
   private String exampleUsage;
-
-  @Column(name = "image_url")
-  private String imageUrl;
-
-  @Column(name = "audio_url")
-  private String audioUrl;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
@@ -74,21 +62,11 @@ public class Card {
   @Builder.Default
   private Set<Tag> tags = new HashSet<>();
 
-  /**
-   * Додати тег до картки
-   *
-   * @param tag тег для додавання
-   */
   public void addTag(Tag tag) {
     this.tags.add(tag);
     tag.getCards().add(this);
   }
 
-  /**
-   * Видалити тег з картки
-   *
-   * @param tag тег для видалення
-   */
   public void removeTag(Tag tag) {
     this.tags.remove(tag);
     tag.getCards().remove(this);

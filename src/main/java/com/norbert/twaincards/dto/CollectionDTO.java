@@ -42,7 +42,6 @@ public class CollectionDTO {
   private String targetLanguageCode;
 
   private Boolean isPublic;
-  private Boolean isDefault;
 
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;

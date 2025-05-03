@@ -9,14 +9,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * DTO для реєстрації та автентифікації користувача
- */
+
 public class AuthDTO {
 
-  /**
-   * DTO для реєстрації нового користувача
-   */
   @Data
   @Builder
   @NoArgsConstructor
@@ -40,13 +35,8 @@ public class AuthDTO {
 
     @Size(max = 50, message = "Прізвище повинно містити не більше 50 символів")
     private String lastName;
-
-    private Long nativeLanguageId;
   }
 
-  /**
-   * DTO для входу користувача
-   */
   @Data
   @Builder
   @NoArgsConstructor
@@ -60,9 +50,6 @@ public class AuthDTO {
     private String password;
   }
 
-  /**
-   * DTO з відповіддю при успішній автентифікації
-   */
   @Data
   @Builder
   @NoArgsConstructor
@@ -73,12 +60,10 @@ public class AuthDTO {
     private String username;
     private String email;
     private String role;
+    private String token;
     private String message;
   }
 
-  /**
-   * DTO для зміни пароля
-   */
   @Data
   @Builder
   @NoArgsConstructor

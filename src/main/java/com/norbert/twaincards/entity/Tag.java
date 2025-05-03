@@ -8,11 +8,10 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Сутність, що представляє тег для групування карток
- */
 @Entity
-@Table(name = "tags")
+@Table(name = "tags", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"name", "user_id"})
+})
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,8 +22,12 @@ public class Tag {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "name", nullable = false, unique = true, length = 50)
+  @Column(name = "name", nullable = false, length = 50)
   private String name;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)

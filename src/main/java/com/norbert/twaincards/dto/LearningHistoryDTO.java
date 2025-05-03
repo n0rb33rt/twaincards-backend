@@ -29,7 +29,6 @@ public class LearningHistoryDTO {
 
   private String actionType;
   private Boolean isCorrect;
-  private Integer responseTimeMs;
   private LocalDateTime performedAt;
 
   /**
@@ -45,7 +44,6 @@ public class LearningHistoryDTO {
     private Long correctAnswers;
     private Long incorrectAnswers;
     private Double successRate;
-    private Double averageResponseTimeMs;
   }
 
   /**

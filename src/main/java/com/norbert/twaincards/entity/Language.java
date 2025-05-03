@@ -1,14 +1,10 @@
 package com.norbert.twaincards.entity;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 /**
  * Сутність, що представляє мову в системі
@@ -33,15 +29,4 @@ public class Language {
 
   @Column(name = "native_name", length = 50)
   private String nativeName;
-
-  @Column(name = "is_enabled")
-  private Boolean isEnabled;
-
-  @CreationTimestamp
-  @Column(name = "created_at", updatable = false)
-  private LocalDateTime createdAt;
-
-  @UpdateTimestamp
-  @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
 }

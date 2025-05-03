@@ -1,6 +1,6 @@
 package com.norbert.twaincards.dto;
 
-import com.norbert.twaincards.entity.User.UserRole;
+import com.norbert.twaincards.entity.enumeration.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
