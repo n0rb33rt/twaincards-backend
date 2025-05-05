@@ -43,10 +43,6 @@ public class CardDTO {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  // Інформація про теги
-  @Builder.Default
-  private Set<TagDTO> tags = new HashSet<>();
-
   private String learningStatus;
   private Integer repetitionCount;
   private Integer correctAnswers;
@@ -95,7 +91,11 @@ public class CardDTO {
 
     @NotNull(message = "Вказівка правильності відповіді не може бути пустою")
     private Boolean isCorrect;
-
-    private Integer responseTimeMs;
+    
+    // Study session ID to associate this answer with a specific study session
+    private Long sessionId;
+    
+    // Response time in milliseconds (optional)
+    private Long responseTimeMs;
   }
 }

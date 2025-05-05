@@ -17,12 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * Утиліта для роботи з JWT токенами
- */
+
 @Component
 @Slf4j
-public class JwtUtils {
+public class  JwtUtils {
 
   @Value("${jwt.secret:defaultSecretKeyThatShouldBeChangedInProduction}")
   private String secretString;
@@ -37,47 +35,32 @@ public class JwtUtils {
     secretKey = Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
   }
 
-  /**
-   * Отримати ім'я користувача з токена
-   */
+
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
   }
 
-  /**
-   * Отримати дату закінчення терміну дії токена
-   */
+
   public Date extractExpiration(String token) {
     return extractClaim(token, Claims::getExpiration);
   }
 
-  /**
-   * Отримати ідентифікатор користувача з токена
-   */
+
   public Long extractUserId(String token) {
     final Claims claims = extractAllClaims(token);
     return Long.parseLong(claims.get("userId").toString());
   }
 
-  /**
-   * Отримати роль користувача з токена
-   */
   public String extractRole(String token) {
     final Claims claims = extractAllClaims(token);
     return claims.get("role", String.class);
   }
 
-  /**
-   * Отримати заявку з токена
-   */
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = extractAllClaims(token);
     return claimsResolver.apply(claims);
   }
 
-  /**
-   * Отримати всі заявки з токена
-   */
   private Claims extractAllClaims(String token) {
     return Jwts.parserBuilder()
             .setSigningKey(secretKey)
@@ -86,16 +69,11 @@ public class JwtUtils {
             .getBody();
   }
 
-  /**
-   * Перевірити, чи токен прострочений
-   */
+
   private Boolean isTokenExpired(String token) {
     return extractExpiration(token).before(new Date());
   }
 
-  /**
-   * Створити токен з додатковими заявками
-   */
   public String generateToken(UserDetails userDetails, Map<String, Object> extraClaims) {
     return Jwts.builder()
             .setClaims(extraClaims)
@@ -106,9 +84,6 @@ public class JwtUtils {
             .compact();
   }
 
-  /**
-   * Створити токен для користувача
-   */
   public String generateToken(UserDetails userDetails, Long userId, String role) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("userId", userId);
@@ -116,9 +91,6 @@ public class JwtUtils {
     return generateToken(userDetails, claims);
   }
 
-  /**
-   * Перевірити валідність токена
-   */
   public Boolean validateToken(String token, UserDetails userDetails) {
     final String username = extractUsername(token);
     return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));

@@ -9,6 +9,9 @@ import com.norbert.twaincards.exception.ResourceNotFoundException;
 import com.norbert.twaincards.exception.UnauthorizedAccessException;
 import com.norbert.twaincards.repository.*;
 import com.norbert.twaincards.util.SecurityUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +42,10 @@ public class LearningService {
   private final UserStatisticsRepository userStatisticsRepository;
   private final ModelMapper modelMapper;
   private final SecurityUtils securityUtils;
+  private final StudySessionRepository studySessionRepository;
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Transactional(readOnly = true)
   public List<CardDTO> getCardsToLearn(Long collectionId, int limit) {
@@ -88,13 +96,12 @@ public class LearningService {
   }
 
   @Transactional(readOnly = true)
-  public List<LearningProgressDTO> getCardsForReview(int limit) {
+  public List<LearningProgressDTO> getCardsForReview() {
     User user = securityUtils.getCurrentUser();
     LocalDateTime now = LocalDateTime.now();
     List<LearningProgress> reviewProgress = learningProgressRepository.findCardsForReview(user, now);
 
     return reviewProgress.stream()
-            .limit(limit)
             .map(this::convertProgressToDto)
             .collect(Collectors.toList());
   }
@@ -172,20 +179,23 @@ public class LearningService {
       progress.setIncorrectAnswers(progress.getIncorrectAnswers() + 1);
     }
 
-    BigDecimal easeFactor = progress.getEaseFactor();
-    if (cardAnswerRequest.getIsCorrect()) {
-      BigDecimal newEase = easeFactor.add(BigDecimal.valueOf(0.1));
-      progress.setEaseFactor(newEase.min(BigDecimal.valueOf(2.5)));
-    } else {
-      BigDecimal newEase = easeFactor.subtract(BigDecimal.valueOf(0.2));
-      progress.setEaseFactor(newEase.max(BigDecimal.valueOf(1.3)));
-    }
-
     updateLearningStatus(progress, cardAnswerRequest.getIsCorrect());
     progress.setLastReviewedAt(LocalDateTime.now());
 
     LearningProgress updatedProgress = learningProgressRepository.save(progress);
-    recordReviewHistory(user, card, cardAnswerRequest.getIsCorrect(), cardAnswerRequest.getResponseTimeMs());
+    
+    // Get the study session if a session ID was provided
+    StudySession studySession = null;
+    if (cardAnswerRequest.getSessionId() != null) {
+      studySession = studySessionRepository.findById(cardAnswerRequest.getSessionId())
+              .orElse(null);
+      
+      if (studySession == null) {
+        log.warn("Study session with ID {} not found", cardAnswerRequest.getSessionId());
+      }
+    }
+    
+    recordReviewHistory(card, cardAnswerRequest.getIsCorrect(), user, studySession);
 
     log.info("Learning progress updated for user: {} and card: {}", user.getId(), cardAnswerRequest.getCardId());
 
@@ -208,7 +218,6 @@ public class LearningService {
     progress.setRepetitionCount(0);
     progress.setCorrectAnswers(0);
     progress.setIncorrectAnswers(0);
-    progress.setEaseFactor(BigDecimal.valueOf(2.5));
     progress.setLearningStatus(LearningStatus.NEW);
     progress.setNextReviewDate(LocalDateTime.now());
 
@@ -232,7 +241,6 @@ public class LearningService {
       progress.setRepetitionCount(0);
       progress.setCorrectAnswers(0);
       progress.setIncorrectAnswers(0);
-      progress.setEaseFactor(BigDecimal.valueOf(2.5));
       progress.setLearningStatus(LearningStatus.NEW);
       progress.setNextReviewDate(LocalDateTime.now());
     }
@@ -288,82 +296,129 @@ public class LearningService {
 
   private void updateLearningStatus(LearningProgress progress, boolean isCorrect) {
     LocalDateTime now = LocalDateTime.now();
-
-    switch (progress.getLearningStatus()) {
-    case NEW:
-      if (isCorrect) {
-        progress.setLearningStatus(LearningStatus.LEARNING);
-        progress.setNextReviewDate(now.plusMinutes(10));
-      } else {
-        progress.setNextReviewDate(now.plusMinutes(5));
-      }
-      break;
-
-    case LEARNING:
-      if (isCorrect) {
-        if (progress.getCorrectAnswers() >= 3) {
+    int repetitionCount = progress.getRepetitionCount();
+    
+    // For incorrect answers, we reset or go back one step
+    if (!isCorrect) {
+      switch (progress.getLearningStatus()) {
+        case NEW:
+          // Stay in NEW status, but review sooner
+          progress.setNextReviewDate(now.plusMinutes(5));
+          break;
+          
+        case LEARNING:
+          // Stay in LEARNING, but review sooner
+          progress.setNextReviewDate(now.plusMinutes(10));
+          break;
+          
+        case REVIEW:
+          // Drop back to LEARNING
+          progress.setLearningStatus(LearningStatus.LEARNING);
+          progress.setNextReviewDate(now.plusHours(1));
+          break;
+          
+        case KNOWN:
+          // Drop back to REVIEW
           progress.setLearningStatus(LearningStatus.REVIEW);
           progress.setNextReviewDate(now.plusDays(1));
-        } else {
-          progress.setNextReviewDate(now.plusMinutes(30));
-        }
-      } else {
-        progress.setNextReviewDate(now.plusMinutes(10));
+          break;
       }
-      break;
-
-    case REVIEW:
-      double easeFactor = progress.getEaseFactor().doubleValue();
-
-      if (isCorrect) {
-        if (progress.getCorrectAnswers() >= 5) {
-          progress.setLearningStatus(LearningStatus.KNOWN);
-          int daysInterval = (int) Math.round(7 * easeFactor);
-          progress.setNextReviewDate(now.plusDays(daysInterval));
-        } else {
-          int daysInterval = (int) Math.round(easeFactor);
-          progress.setNextReviewDate(now.plusDays(Math.max(1, daysInterval)));
-        }
-      } else {
+      return;
+    }
+    
+    // For correct answers, we advance based on repetition count
+    switch (progress.getLearningStatus()) {
+      case NEW:
         progress.setLearningStatus(LearningStatus.LEARNING);
-        progress.setNextReviewDate(now.plusHours(3));
-      }
-      break;
-
-    case KNOWN:
-      if (isCorrect) {
-        double knownEaseFactor = progress.getEaseFactor().doubleValue();
-        int daysInterval = (int) Math.round(14 * knownEaseFactor);
-        progress.setNextReviewDate(now.plusDays(Math.min(60, daysInterval)));
-      } else {
-        progress.setLearningStatus(LearningStatus.REVIEW);
-        progress.setNextReviewDate(now.plusDays(1));
-      }
-      break;
+        progress.setNextReviewDate(now.plusHours(1)); // First time correct: repeat in 1 hour
+        break;
+        
+      case LEARNING:
+        if (repetitionCount >= 2) {
+          progress.setLearningStatus(LearningStatus.REVIEW);
+          progress.setNextReviewDate(now.plusHours(6)); // Second time correct: repeat in 6 hours
+        } else {
+          progress.setNextReviewDate(now.plusHours(1)); // Still learning
+        }
+        break;
+        
+      case REVIEW:
+        if (repetitionCount >= 3) {
+          progress.setLearningStatus(LearningStatus.KNOWN);
+          progress.setNextReviewDate(now.plusDays(1)); // Third time correct: repeat in 1 day
+        } else {
+          progress.setNextReviewDate(now.plusHours(6)); // Still in review
+        }
+        break;
+        
+      case KNOWN:
+        progress.setNextReviewDate(now.plusDays(7)); // Fourth time and beyond: repeat in 7 days
+        break;
     }
   }
 
-  private void recordReviewHistory(User user, Card card, boolean isCorrect, Integer responseTimeMs) {
+  @Transactional
+  public void recordReviewHistory(Card card, boolean isCorrect, User user, StudySession studySession) {
     try {
+      // Create learning history entry
       LearningHistory history = LearningHistory.builder()
               .user(user)
               .card(card)
               .actionType(ActionType.REVIEW)
               .isCorrect(isCorrect)
+              .studySession(studySession)
               .performedAt(LocalDateTime.now())
               .build();
 
       learningHistoryRepository.save(history);
 
+      // Update user statistics
       UserStatistics statistics = userStatisticsRepository.findByUser(user)
-              .orElseGet(() -> {
-                UserStatistics newStats = UserStatistics.builder().user(user).build();
-                return userStatisticsRepository.save(newStats);
-              });
+              .orElse(UserStatistics.builder().user(user).build());
 
+      // Update learning streak
+      LocalDate today = LocalDate.now();
+      if (statistics.getLastStudyDate() == null || !statistics.getLastStudyDate().equals(today)) {
+        if (statistics.getLastStudyDate() != null && 
+            statistics.getLastStudyDate().plusDays(1).equals(today)) {
+          // Increment streak only if last study was yesterday
+          statistics.setLearningStreakDays(statistics.getLearningStreakDays() + 1);
+        } else if (statistics.getLastStudyDate() == null || 
+                  !statistics.getLastStudyDate().equals(today)) {
+          // Reset streak if more than 1 day gap
+          statistics.setLearningStreakDays(1);
+        }
+        statistics.setLastStudyDate(today);
+      }
+
+      // Get the specific collection for this card
+      Collection collection = card.getCollection();
+      Long collectionId = collection.getId();
+      
+      // Get total cards count for this collection, including public collections and user's own collections
+      Long totalCards = cardRepository.countByCollectionAndUserAccess(collection, user);
+      
+      // Count learned, learning, and review cards for this specific collection
+      Long learnedCards = learningProgressRepository.countKnownCardsByUserAndCollection(user, collectionId);
+      Long learningCards = learningProgressRepository.countLearningCardsByUserAndCollection(user, collectionId);
+      Long reviewCards = learningProgressRepository.countReviewCardsByUserAndCollection(user, collectionId);
+      
+      // Total in-progress cards for this collection
+      Long inProgressCards = learningCards + reviewCards;
+      
+      // Update statistics for this collection
+      statistics.setTotalCards(totalCards.intValue());
+      statistics.setLearnedCards(learnedCards.intValue());
+      statistics.setCardsInProgress(inProgressCards.intValue());
+      
+      // Calculate cards to learn (total - learned - in progress) for this collection
+      int toLearnCards = totalCards.intValue() - learnedCards.intValue() - inProgressCards.intValue();
+      statistics.setCardsToLearn(Math.max(0, toLearnCards));
+      
       userStatisticsRepository.save(statistics);
     } catch (Exception e) {
       log.error("Error recording review history", e);
+      // Continue execution despite the error
     }
   }
 
@@ -372,12 +427,22 @@ public class LearningService {
 
     progressDTO.setUserId(progress.getUser().getId());
 
-    Card card = progress.getCard();
-    progressDTO.setCardId(card.getId());
-    progressDTO.setFrontText(card.getFrontText());
-    progressDTO.setBackText(card.getBackText());
-    progressDTO.setCollectionId(card.getCollection().getId());
-    progressDTO.setCollectionName(card.getCollection().getName());
+    try {
+      Card card = progress.getCard();
+      progressDTO.setCardId(card.getId());
+      progressDTO.setFrontText(card.getFrontText());
+      progressDTO.setBackText(card.getBackText());
+      progressDTO.setCollectionId(card.getCollection().getId());
+      progressDTO.setCollectionName(card.getCollection().getName());
+    } catch (EntityNotFoundException ex) {
+      // This means the user doesn't have access to this card due to role-based security
+      log.warn("User does not have access to card: {}, setting minimal info", progress.getCard().getId());
+      // Set just the ID which we know, but mark text fields as "Access restricted"
+      progressDTO.setCardId(progress.getCard().getId());
+      progressDTO.setFrontText("[Access restricted]");
+      progressDTO.setBackText("[Access restricted]");
+      // Leave collection fields null
+    }
 
     progressDTO.setLearningStatus(progress.getLearningStatus().name());
 

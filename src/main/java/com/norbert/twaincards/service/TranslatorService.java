@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ import java.io.IOException;
 public class TranslatorService {
   private final ObjectMapper objectMapper;
   private final OkHttpClient okHttpClient;
+  private final CommonWordService commonWordService;
 
   @Value("${azure.translator.api.url}")
   private String url;
@@ -31,6 +33,22 @@ public class TranslatorService {
   private String key;
 
   public TranslatorResponse translate(AzureTranslatorRequest translatorRequest) {
+    String sourceText = translatorRequest.toTranslate().trim();
+    String sourceLanguageCode = translatorRequest.fromLanguage().getCode();
+    String targetLanguageCode = translatorRequest.toLanguage().getCode();
+    
+
+    Optional<String> commonTranslation = commonWordService.findTranslation(
+        sourceText, sourceLanguageCode, targetLanguageCode);
+    
+    if (commonTranslation.isPresent()) {
+      log.info("Translation found in common words database: {}", sourceText);
+      return new TranslatorResponse(commonTranslation.get());
+    }
+    
+    log.info("Translation not found in common words database, calling Azure API: {}", sourceText);
+    
+
     try {
       RequestBody body = buildRequestBody(translatorRequest);
       String requestUrl = buildUrl(translatorRequest);
@@ -50,6 +68,7 @@ public class TranslatorService {
         }
 
         String translatedText = responses[0].getTranslations().get(0).getText();
+        
         return new TranslatorResponse(translatedText);
       }
     } catch (IOException e) {

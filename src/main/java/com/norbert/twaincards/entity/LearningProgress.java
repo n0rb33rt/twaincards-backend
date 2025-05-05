@@ -44,10 +44,6 @@ public class LearningProgress {
   @Builder.Default
   private Integer incorrectAnswers = 0;
 
-  @Column(name = "ease_factor", precision = 4, scale = 2)
-  @Builder.Default
-  private BigDecimal easeFactor = BigDecimal.valueOf(2.5);
-
   @Column(name = "next_review_date")
   private LocalDateTime nextReviewDate;
 

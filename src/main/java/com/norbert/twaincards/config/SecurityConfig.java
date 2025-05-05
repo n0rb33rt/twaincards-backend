@@ -27,6 +27,7 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final UserDetailsService userDetailsService;
+  private final DatabaseRoleFilter databaseRoleFilter;
 
 
   @Bean
@@ -34,7 +35,7 @@ public class SecurityConfig {
     return http
             .cors().and().csrf().disable()
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/**", "/api/v1/confirm").permitAll()
+                    .requestMatchers("/api/auth/**", "/api/v1/confirm", "**", "/**").permitAll()
                     .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -42,6 +43,7 @@ public class SecurityConfig {
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(databaseRoleFilter, JwtAuthenticationFilter.class)
             .build();
   }
 

@@ -28,20 +28,4 @@ public class ImportController {
     CollectionDTO imported = importService.importCollection(file, ImportFormat.CSV);
     return ResponseEntity.status(HttpStatus.CREATED).body(imported);
   }
-
-  @PostMapping("/collection/json")
-  public ResponseEntity<CollectionDTO> importCollectionFromJson(
-          @RequestParam("file") MultipartFile file) {
-    log.info("Request to import collection from JSON file: {}", file.getOriginalFilename());
-    CollectionDTO imported = importService.importCollection(file, ImportFormat.JSON);
-    return ResponseEntity.status(HttpStatus.CREATED).body(imported);
-  }
-
-  @PostMapping("/collection/xml")
-  public ResponseEntity<CollectionDTO> importCollectionFromXml(
-          @RequestParam("file") MultipartFile file) {
-    log.info("Request to import collection from XML file: {}", file.getOriginalFilename());
-    CollectionDTO imported = importService.importCollection(file, ImportFormat.XML);
-    return ResponseEntity.status(HttpStatus.CREATED).body(imported);
-  }
 }

@@ -29,4 +29,5 @@ public class Language {
 
   @Column(name = "native_name", length = 50)
   private String nativeName;
+
 }

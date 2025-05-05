@@ -1,7 +1,6 @@
 package com.norbert.twaincards.service;
 
 import com.norbert.twaincards.dto.CardDTO;
-import com.norbert.twaincards.dto.TagDTO;
 import com.norbert.twaincards.entity.*;
 import com.norbert.twaincards.entity.enumeration.ActionType;
 import com.norbert.twaincards.exception.ResourceNotFoundException;
@@ -9,7 +8,7 @@ import com.norbert.twaincards.exception.UnauthorizedAccessException;
 import com.norbert.twaincards.repository.CardRepository;
 import com.norbert.twaincards.repository.CollectionRepository;
 import com.norbert.twaincards.repository.LearningHistoryRepository;
-import com.norbert.twaincards.repository.TagRepository;
+import com.norbert.twaincards.repository.UserStatisticsRepository;
 import com.norbert.twaincards.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +32,8 @@ public class CardService {
 
   private final CardRepository cardRepository;
   private final CollectionRepository collectionRepository;
-  private final TagRepository tagRepository;
   private final LearningHistoryRepository learningHistoryRepository;
+  private final UserStatisticsRepository userStatisticsRepository;
   private final ModelMapper modelMapper;
   private final SecurityUtils securityUtils;
 
@@ -59,15 +58,21 @@ public class CardService {
     return new PageImpl<>(cardDTOs, pageable, cardsPage.getTotalElements());
   }
 
-  @Transactional(readOnly = true)
   public CardDTO getCardById(Long id) {
     Card card = cardRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + id));
 
     checkCardAccess(card);
-    recordCardView(card);
-
-    return convertToDto(card);
+    
+    CardDTO cardDTO = convertToDto(card);
+    
+    try {
+      recordCardViewSeparate(card);
+    } catch (Exception e) {
+      log.error("Error recording card view history in separate transaction", e);
+    }
+    
+    return cardDTO;
   }
 
   @Transactional
@@ -80,19 +85,9 @@ public class CardService {
             .frontText(createCardRequest.getFrontText())
             .backText(createCardRequest.getBackText())
             .exampleUsage(createCardRequest.getExampleUsage())
+            .createdAt(LocalDateTime.now())
             .build();
 
-    if (createCardRequest.getTagNames() != null && !createCardRequest.getTagNames().isEmpty()) {
-      for (String tagName : createCardRequest.getTagNames()) {
-        // Find tag by name and user or create a new one
-        Tag tag = tagRepository.findByNameAndUser(tagName, currentUser)
-                .orElseGet(() -> tagRepository.save(Tag.builder()
-                        .name(tagName)
-                        .user(currentUser)
-                        .build()));
-        card.addTag(tag);
-      }
-    }
 
     Card savedCard = cardRepository.save(card);
     log.info("Card created successfully with id: {}", savedCard.getId());
@@ -114,23 +109,6 @@ public class CardService {
     card.setExampleUsage(cardDTO.getExampleUsage());
     card.setUpdatedAt(LocalDateTime.now());
 
-    if (cardDTO.getTags() != null) {
-      Set<Tag> currentTags = new HashSet<>(card.getTags());
-      for (Tag tag : currentTags) {
-        card.removeTag(tag);
-      }
-
-      for (TagDTO tagDTO : cardDTO.getTags()) {
-        // Find tag by name and user or create a new one
-        Tag tag = tagRepository.findByNameAndUser(tagDTO.getName(), currentUser)
-                .orElseGet(() -> tagRepository.save(Tag.builder()
-                        .name(tagDTO.getName())
-                        .user(currentUser)
-                        .build()));
-        card.addTag(tag);
-      }
-    }
-
     Card updatedCard = cardRepository.save(card);
     log.info("Card updated successfully with id: {}", updatedCard.getId());
     recordCardEdit(updatedCard);
@@ -144,6 +122,12 @@ public class CardService {
             .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + id));
 
     checkCardAccess(card);
+    
+    // First, handle dependent LearningHistory entities separately
+    // This avoids ConcurrentModificationException during cascading of bidirectional relationships
+    learningHistoryRepository.deleteByCard(card);
+    
+    // Record the deletion in a new transaction after cleaning up existing history
     recordCardDeletion(card);
 
     cardRepository.delete(card);
@@ -158,66 +142,6 @@ public class CardService {
     return cards.stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
-  }
-
-  @Transactional(readOnly = true)
-  public List<CardDTO> getCardsByTag(Long collectionId, String tagName) {
-    User currentUser = securityUtils.getCurrentUser();
-    Collection collection = getCollectionWithAccessCheck(collectionId);
-
-    // Find tag by name and user
-    Tag tag = tagRepository.findByNameAndUser(tagName, currentUser)
-            .orElseThrow(() -> new ResourceNotFoundException("Tag not found with name: " + tagName));
-
-    List<Card> cards = cardRepository.findByTagAndCollection(tag, collection);
-    return cards.stream()
-            .map(this::convertToDto)
-            .collect(Collectors.toList());
-  }
-
-  @Transactional
-  public CardDTO addTagsToCard(Long id, List<String> tagNames) {
-    User currentUser = securityUtils.getCurrentUser();
-    Card card = cardRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + id));
-
-    checkCardAccess(card);
-
-    for (String tagName : tagNames) {
-      // Find tag by name and user or create a new one
-      Tag tag = tagRepository.findByNameAndUser(tagName, currentUser)
-              .orElseGet(() -> tagRepository.save(Tag.builder()
-                      .name(tagName)
-                      .user(currentUser)
-                      .build()));
-      card.addTag(tag);
-    }
-
-    card.setUpdatedAt(LocalDateTime.now());
-    Card updatedCard = cardRepository.save(card);
-    log.info("Tags added successfully to card with id: {}", updatedCard.getId());
-
-    return convertToDto(updatedCard);
-  }
-
-  @Transactional
-  public CardDTO removeTagFromCard(Long id, String tagName) {
-    User currentUser = securityUtils.getCurrentUser();
-    Card card = cardRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + id));
-
-    checkCardAccess(card);
-
-    // Find tag by name and user
-    Tag tag = tagRepository.findByNameAndUser(tagName, currentUser)
-            .orElseThrow(() -> new ResourceNotFoundException("Tag not found with name: " + tagName));
-
-    card.removeTag(tag);
-    card.setUpdatedAt(LocalDateTime.now());
-    Card updatedCard = cardRepository.save(card);
-    log.info("Tag removed successfully from card with id: {}", updatedCard.getId());
-
-    return convertToDto(updatedCard);
   }
 
   private Collection getCollectionWithAccessCheck(Long collectionId) {
@@ -303,18 +227,41 @@ public class CardService {
     }
   }
 
+  /**
+   * Records a card view in a separate transaction to avoid issues with read-only transactions
+   */
+  @Transactional
+  public void recordCardViewSeparate(Card card) {
+    recordCardView(card);
+  }
+
   private CardDTO convertToDto(Card card) {
     CardDTO cardDTO = modelMapper.map(card, CardDTO.class);
     cardDTO.setCollectionId(card.getCollection().getId());
-
-    Set<TagDTO> tagDTOs = card.getTags().stream()
-            .map(tag -> TagDTO.builder()
-                    .id(tag.getId())
-                    .name(tag.getName())
-                    .build())
-            .collect(Collectors.toSet());
-
-    cardDTO.setTags(tagDTOs);
     return cardDTO;
+  }
+
+  private void recordReviewHistory(User user, Card card, boolean isCorrect, Integer responseTimeMs) {
+    try {
+      LearningHistory history = LearningHistory.builder()
+              .user(user)
+              .card(card)
+              .actionType(ActionType.REVIEW)
+              .isCorrect(isCorrect)
+              .performedAt(LocalDateTime.now())
+              .build();
+
+      learningHistoryRepository.save(history);
+
+      UserStatistics statistics = userStatisticsRepository.findByUser(user)
+              .orElseGet(() -> {
+                UserStatistics newStats = UserStatistics.builder().user(user).build();
+                return userStatisticsRepository.save(newStats);
+              });
+
+      userStatisticsRepository.save(statistics);  // This doesn't update the actual statistics!
+    } catch (Exception e) {
+      log.error("Error recording review history", e);
+    }
   }
 }

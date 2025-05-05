@@ -1,5 +1,5 @@
 package com.norbert.twaincards.entity;
-import com.norbert.twaincards.entity.enumeration.UserRole;
+
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -46,9 +46,9 @@ public class User {
   @Column(name = "is_active")
   private Boolean isActive;
 
-  @Column(name = "role", length = 20)
-  @Enumerated(EnumType.STRING)
-  private UserRole role;
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "role_id")
+  private Role role;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @ToString.Exclude
@@ -75,5 +75,6 @@ public class User {
   @ToString.Exclude
   @EqualsAndHashCode.Exclude
   @Builder.Default
-  private Set<Tag> tags = new HashSet<>();
+  private Set<CollectionUserUsage> collectionUsages = new HashSet<>();
+
 }

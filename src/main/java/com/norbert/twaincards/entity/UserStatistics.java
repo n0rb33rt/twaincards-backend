@@ -33,6 +33,14 @@ public class UserStatistics {
   @Column(name = "learned_cards")
   @Builder.Default
   private Integer learnedCards = 0;
+  
+  @Column(name = "cards_in_progress")
+  @Builder.Default
+  private Integer cardsInProgress = 0;
+  
+  @Column(name = "cards_to_learn")
+  @Builder.Default
+  private Integer cardsToLearn = 0;
 
   @Column(name = "learning_streak_days")
   @Builder.Default

@@ -21,9 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Фільтр для автентифікації за допомогою JWT токенів
- */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -39,31 +36,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           FilterChain filterChain) throws ServletException, IOException {
 
     try {
-      // Отримуємо JWT токен з запиту
+
       String jwt = parseJwt(request);
 
       if (jwt != null) {
-        // Отримуємо ім'я користувача з токена
         String username = jwtUtils.extractUsername(jwt);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-          // Завантажуємо користувача за ім'ям
           UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-          // Перевіряємо валідність токена
           if (jwtUtils.validateToken(jwt, userDetails)) {
-            // Створюємо об'єкт автентифікації
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
 
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Додаємо ідентифікатор користувача до атрибутів запиту
             Long userId = jwtUtils.extractUserId(jwt);
             request.setAttribute("userId", userId);
 
-            // Додаємо роль користувача до атрибутів запиту
             String role = jwtUtils.extractRole(jwt);
             request.setAttribute("userRole", role);
           }
@@ -86,9 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
-  /**
-   * Отримати JWT токен з запиту
-   */
+
   private String parseJwt(HttpServletRequest request) {
     String headerAuth = request.getHeader("Authorization");
 

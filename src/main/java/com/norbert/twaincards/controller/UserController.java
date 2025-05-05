@@ -38,7 +38,12 @@ public class UserController {
     log.info("Request to get current user");
     return ResponseEntity.ok(userService.getCurrentUser());
   }
-
+  
+  @PutMapping("/me")
+  public ResponseEntity<UserDTO> updateCurrentUser(@RequestBody @Valid UserDTO userDTO) {
+    log.info("Request to update current user");
+    return ResponseEntity.ok(userService.updateCurrentUser(userDTO));
+  }
 
   @PostMapping("/change-password")
   public ResponseEntity<Void> changePassword(@RequestBody @Valid PasswordChangeRequest passwordChangeRequest) {

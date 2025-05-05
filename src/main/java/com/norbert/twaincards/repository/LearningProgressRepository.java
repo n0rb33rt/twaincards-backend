@@ -3,8 +3,8 @@ package com.norbert.twaincards.repository;
 
 import com.norbert.twaincards.entity.Card;
 import com.norbert.twaincards.entity.LearningProgress;
-import com.norbert.twaincards.entity.LearningProgress.LearningStatus;
 import com.norbert.twaincards.entity.User;
+import com.norbert.twaincards.entity.enumeration.LearningStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -128,4 +128,40 @@ public interface LearningProgressRepository extends JpaRepository<LearningProgre
    * @return сторінка прогресу карток
    */
   Page<LearningProgress> findByUserAndLearningStatus(User user, LearningStatus status, Pageable pageable);
+
+  /**
+   * Отримання кількості карток, які користувач вивчає в конкретній колекції
+   * @param user користувач
+   * @param collectionId ідентифікатор колекції
+   * @return кількість карток, які вивчаються
+   */
+  @Query("SELECT COUNT(lp) FROM LearningProgress lp JOIN lp.card c " +
+         "WHERE lp.user = :user AND c.collection.id = :collectionId AND lp.learningStatus = 'LEARNING'")
+  Long countLearningCardsByUserAndCollection(
+          @Param("user") User user,
+          @Param("collectionId") Long collectionId);
+
+  /**
+   * Отримання кількості карток, які користувач повторює в конкретній колекції
+   * @param user користувач
+   * @param collectionId ідентифікатор колекції
+   * @return кількість карток на повторенні
+   */
+  @Query("SELECT COUNT(lp) FROM LearningProgress lp JOIN lp.card c " +
+         "WHERE lp.user = :user AND c.collection.id = :collectionId AND lp.learningStatus = 'REVIEW'")
+  Long countReviewCardsByUserAndCollection(
+          @Param("user") User user,
+          @Param("collectionId") Long collectionId);
+
+  /**
+   * Отримання кількості карток, які користувач вже знає в конкретній колекції
+   * @param user користувач
+   * @param collectionId ідентифікатор колекції
+   * @return кількість вивчених карток
+   */
+  @Query("SELECT COUNT(lp) FROM LearningProgress lp JOIN lp.card c " +
+         "WHERE lp.user = :user AND c.collection.id = :collectionId AND lp.learningStatus = 'KNOWN'")
+  Long countKnownCardsByUserAndCollection(
+          @Param("user") User user,
+          @Param("collectionId") Long collectionId);
 }

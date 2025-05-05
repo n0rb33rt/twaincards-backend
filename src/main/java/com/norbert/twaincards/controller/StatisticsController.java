@@ -24,12 +24,6 @@ public class StatisticsController {
     return ResponseEntity.ok(statisticsService.getUserStatistics());
   }
 
-  @GetMapping("/languages")
-  public ResponseEntity<List<UserStatisticsDTO.LanguageStatisticsDTO>> getLanguageStatistics() {
-    log.info("Request to get language statistics for user");
-    return ResponseEntity.ok(statisticsService.getLanguageStatistics());
-  }
-
   @GetMapping("/activity")
   public ResponseEntity<UserStatisticsDTO.ActivityStatisticsDTO> getActivityStatistics(
           @RequestParam(defaultValue = "30") int days) {
@@ -56,25 +50,5 @@ public class StatisticsController {
           @RequestParam(defaultValue = "10") int limit) {
     log.info("Request to get top {} users by learned cards", limit);
     return ResponseEntity.ok(statisticsService.getTopUsersByLearnedCards(limit));
-  }
-
-  @GetMapping("/top-users/learning-streak")
-  public ResponseEntity<List<UserStatisticsDTO>> getTopUsersByLearningStreak(
-          @RequestParam(defaultValue = "10") int limit) {
-    log.info("Request to get top {} users by learning streak", limit);
-    return ResponseEntity.ok(statisticsService.getTopUsersByLearningStreak(limit));
-  }
-
-  @GetMapping("/global")
-  public ResponseEntity<UserStatisticsDTO.GlobalStatisticsDTO> getGlobalStatistics() {
-    log.info("Request to get global statistics");
-    return ResponseEntity.ok(statisticsService.getGlobalStatistics());
-  }
-
-  @PostMapping("/update-all")
-  public ResponseEntity<Void> updateAllUserStatistics() {
-    log.info("Request to update statistics for all users");
-    statisticsService.updateAllUserStatistics();
-    return ResponseEntity.ok().build();
   }
 }

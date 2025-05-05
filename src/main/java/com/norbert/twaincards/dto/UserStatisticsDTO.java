@@ -10,9 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DTO для передачі даних статистики користувача
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -25,19 +22,16 @@ public class UserStatisticsDTO {
 
   private Integer totalCards;
   private Integer learnedCards;
-  private Integer totalStudyTimeMinutes;
+  private Integer cardsInProgress;
+  private Integer cardsToLearn;
   private Integer learningStreakDays;
   private LocalDate lastStudyDate;
   private LocalDateTime updatedAt;
 
-  // Розрахункові поля
   private Double completionPercentage;
   private Integer cardsToReview;
   private Integer newCardsToLearn;
 
-  /**
-   * DTO для детальної статистики за мовами
-   */
   @Data
   @Builder
   @NoArgsConstructor
@@ -51,9 +45,6 @@ public class UserStatisticsDTO {
     private Double completionPercentage;
   }
 
-  /**
-   * DTO для зведеної статистики активності
-   */
   @Data
   @Builder
   @NoArgsConstructor
@@ -67,9 +58,6 @@ public class UserStatisticsDTO {
     private List<DailyActivityDTO> dailyActivity;
   }
 
-  /**
-   * DTO для статистики активності за день
-   */
   @Data
   @Builder
   @NoArgsConstructor
@@ -77,23 +65,5 @@ public class UserStatisticsDTO {
   public static class DailyActivityDTO {
     private LocalDate date;
     private Integer cardsStudied;
-    private Integer newCardsLearned;
-    private Integer minutesSpent;
-  }
-
-  /**
-   * DTO для глобальної статистики системи
-   */
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class GlobalStatisticsDTO {
-    private Long totalUsers;
-    private Long totalCards;
-    private Long totalCollections;
-    private Long totalLearnedCards;
-    private Long totalStudyTimeMinutes;
-    private Double averageCompletionPercentage;
   }
 }

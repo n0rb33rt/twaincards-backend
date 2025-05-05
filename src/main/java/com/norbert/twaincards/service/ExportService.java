@@ -76,53 +76,32 @@ public class ExportService {
     exportData.put("collection", collectionDTO);
     exportData.put("cards", cardDTOs);
 
+    return exportToCsv(cardDTOs);
+  }
+
+  private String exportToCsv(List<CardDTO> cards) {
     try {
-      switch (format) {
-      case CSV:
-        return exportToCsv(cardDTOs);
-      case JSON:
-        return exportToJson(exportData);
-      case XML:
-        return exportToXml(exportData);
-      default:
-        throw new ExportException("Unsupported export format: " + format);
+      CsvSchema.Builder schemaBuilder = CsvSchema.builder();
+      schemaBuilder.addColumn("frontText");
+      schemaBuilder.addColumn("backText");
+      schemaBuilder.addColumn("exampleUsage");
+
+      CsvSchema schema = schemaBuilder.build().withHeader();
+
+      List<Map<String, String>> simplifiedCards = new ArrayList<>();
+      for (CardDTO card : cards) {
+        Map<String, String> simplifiedCard = new HashMap<>();
+        simplifiedCard.put("frontText", card.getFrontText());
+        simplifiedCard.put("backText", card.getBackText());
+        simplifiedCard.put("exampleUsage", card.getExampleUsage() != null ? card.getExampleUsage() : "");
+        simplifiedCards.add(simplifiedCard);
       }
-    } catch (IOException e) {
-      log.error("Error exporting collection with id: {}", collectionId, e);
-      throw new ExportException("Error exporting data: " + e.getMessage());
+
+      CsvMapper csvMapper = new CsvMapper();
+      return csvMapper.writer(schema).writeValueAsString(simplifiedCards);
+    }catch (Exception e) {
+      throw new ExportException("Error while exporting");
     }
   }
 
-  private String exportToCsv(List<CardDTO> cards) throws IOException {
-    CsvSchema.Builder schemaBuilder = CsvSchema.builder();
-    schemaBuilder.addColumn("frontText");
-    schemaBuilder.addColumn("backText");
-    schemaBuilder.addColumn("exampleUsage");
-
-    CsvSchema schema = schemaBuilder.build().withHeader();
-
-    List<Map<String, String>> simplifiedCards = new ArrayList<>();
-    for (CardDTO card : cards) {
-      Map<String, String> simplifiedCard = new HashMap<>();
-      simplifiedCard.put("frontText", card.getFrontText());
-      simplifiedCard.put("backText", card.getBackText());
-      simplifiedCard.put("exampleUsage", card.getExampleUsage() != null ? card.getExampleUsage() : "");
-      simplifiedCards.add(simplifiedCard);
-    }
-
-    CsvMapper csvMapper = new CsvMapper();
-    return csvMapper.writer(schema).writeValueAsString(simplifiedCards);
-  }
-
-  private String exportToJson(Map<String, Object> data) throws IOException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-    return objectMapper.writeValueAsString(data);
-  }
-
-  private String exportToXml(Map<String, Object> data) throws IOException {
-    XmlMapper xmlMapper = new XmlMapper();
-    xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
-    return xmlMapper.writeValueAsString(data);
-  }
 }

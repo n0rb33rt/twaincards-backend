@@ -76,29 +76,4 @@ public class CardController {
     return ResponseEntity.ok(cardService.searchCards(collectionId, query));
   }
 
-  @GetMapping("/by-tag")
-  public ResponseEntity<List<CardDTO>> getCardsByTag(
-          @RequestParam Long collectionId,
-          @RequestParam String tagName) {
-    log.info("Request to get cards by tag: {} in collection with id: {}", tagName, collectionId);
-    return ResponseEntity.ok(cardService.getCardsByTag(collectionId, tagName));
-  }
-
-  @PostMapping("/{id}/tags")
-  public ResponseEntity<CardDTO> addTagsToCard(
-          @PathVariable Long id,
-          @RequestBody List<String> tagNames) {
-    log.info("Request to add tags to card with id: {}", id);
-    CardDTO updatedCard = cardService.addTagsToCard(id, tagNames);
-    return ResponseEntity.ok(updatedCard);
-  }
-
-  @DeleteMapping("/{id}/tags/{tagName}")
-  public ResponseEntity<CardDTO> removeTagFromCard(
-          @PathVariable Long id,
-          @PathVariable String tagName) {
-    log.info("Request to remove tag: {} from card with id: {}", tagName, id);
-    CardDTO updatedCard = cardService.removeTagFromCard(id, tagName);
-    return ResponseEntity.ok(updatedCard);
-  }
 }

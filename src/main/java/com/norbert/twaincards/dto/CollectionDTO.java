@@ -50,4 +50,5 @@ public class CollectionDTO {
   private Integer cardCount;
   private Integer learnedCardCount;
   private Double completionPercentage;
+  private Integer usersCount;
 }

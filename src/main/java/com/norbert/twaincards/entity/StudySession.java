@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -16,6 +18,8 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"studiedCollections", "learningHistoryEntries"})
+@ToString(exclude = {"studiedCollections", "learningHistoryEntries"})
 public class StudySession {
 
   @Id
@@ -26,7 +30,7 @@ public class StudySession {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Column(name = "start_time", nullable = false)
+  @Column(name = "start_time")
   private LocalDateTime startTime;
 
   @Column(name = "end_time")
@@ -66,10 +70,7 @@ public class StudySession {
   @Builder.Default
   private Set<LearningHistory> learningHistoryEntries = new HashSet<>();
 
-  /**
-   * Calculate accuracy rate for this study session
-   * @return Percentage of correct answers (0-100)
-   */
+
   @Transient
   public Double getAccuracyRate() {
     if (cardsReviewed == 0) {
@@ -78,9 +79,7 @@ public class StudySession {
     return (correctAnswers * 100.0) / cardsReviewed;
   }
 
-  /**
-   * Updates session metrics when completed
-   */
+
   public void completeSession() {
     if (!isCompleted) {
       this.endTime = LocalDateTime.now();

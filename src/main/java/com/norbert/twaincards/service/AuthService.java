@@ -32,7 +32,7 @@ public class AuthService {
   private final UserService userService;
   private final JwtUtils jwtUtils;
   private final AuthenticationManager authenticationManager;
-  private final EmailConfirmationTokenService emailConfirmationTokenService;
+  private final TokenService tokenService;
 
   public AuthResponse register(RegisterRequest registerRequest) {
     UserDTO userDTO = userService.registerUser(registerRequest);
@@ -40,14 +40,13 @@ public class AuthService {
     User user = userRepository.findById(userDTO.getId())
             .orElseThrow(() -> new ResourceNotFoundException("User not found after registration"));
 
-    emailConfirmationTokenService.sendConfirmationMail(user);
+    tokenService.sendConfirmationMail(user);
 
     return AuthResponse.builder()
             .message("Registration successful! Please check your email to activate your account.")
             .build();
   }
 
-  @Transactional
   public AuthResponse login(LoginRequest loginRequest) {
     try {
       Authentication authentication = authenticationManager.authenticate(
@@ -63,7 +62,7 @@ public class AuthService {
       String token = jwtUtils.generateToken(
               (UserDetails) authentication.getPrincipal(),
               user.getId(),
-              user.getRole().name()
+              user.getRole().getName()
       );
 
       user.setLastLoginDate(LocalDateTime.now());
@@ -73,7 +72,7 @@ public class AuthService {
               .userId(user.getId())
               .username(user.getUsername())
               .email(user.getEmail())
-              .role(user.getRole().name())
+              .role(user.getRole().getName())
               .token(token)
               .message("User authenticated successfully")
               .build();
@@ -81,27 +80,5 @@ public class AuthService {
       log.error("Invalid credentials for user: {}", loginRequest.getUsernameOrEmail());
       throw new InvalidPasswordException("Invalid username/email or password");
     }
-  }
-
-
-  @Transactional
-  public AuthResponse refreshToken() {
-    User user = securityUtils.getCurrentUser();
-
-
-    String token = jwtUtils.generateToken(
-            org.springframework.security.core.userdetails.User.builder()
-                    .username(user.getUsername())
-                    .password(user.getPasswordHash())
-                    .authorities(user.getRole().name())
-                    .build(),
-            user.getId(),
-            user.getRole().name()
-    );
-
-    return AuthResponse.builder()
-            .token(token)
-            .message("Token refreshed successfully")
-            .build();
   }
 }

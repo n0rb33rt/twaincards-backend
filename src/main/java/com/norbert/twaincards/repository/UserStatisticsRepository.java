@@ -59,7 +59,7 @@ public interface UserStatisticsRepository extends JpaRepository<UserStatistics, 
    * Отримання загальної статистики навчання
    * @return масив [загальна кількість карток, загальна кількість вивчених карток, загальний час навчання]
    */
-  @Query("SELECT SUM(us.totalCards), SUM(us.learnedCards), SUM(us.totalStudyTimeMinutes) FROM UserStatistics us")
+  @Query("SELECT SUM(us.totalCards), SUM(us.learnedCards) FROM UserStatistics us")
   Object[] getGlobalStatistics();
 
   /**

@@ -1,8 +1,6 @@
 package com.norbert.twaincards.entity;
 
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
 
@@ -16,6 +14,8 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"collection", "learningProgress", "learningHistory"})
 public class Card {
 
   @Id
@@ -35,40 +35,17 @@ public class Card {
   @Column(name = "example_usage")
   private String exampleUsage;
 
-  @CreationTimestamp
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  @UpdateTimestamp
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
   @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-  @ToString.Exclude
-  @EqualsAndHashCode.Exclude
   @Builder.Default
   private Set<LearningProgress> learningProgress = new HashSet<>();
 
   @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-  @ToString.Exclude
-  @EqualsAndHashCode.Exclude
   @Builder.Default
   private Set<LearningHistory> learningHistory = new HashSet<>();
-
-  @ManyToMany
-  @JoinTable(name = "card_tags", joinColumns = @JoinColumn(name = "card_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
-  @ToString.Exclude
-  @EqualsAndHashCode.Exclude
-  @Builder.Default
-  private Set<Tag> tags = new HashSet<>();
-
-  public void addTag(Tag tag) {
-    this.tags.add(tag);
-    tag.getCards().add(this);
-  }
-
-  public void removeTag(Tag tag) {
-    this.tags.remove(tag);
-    tag.getCards().remove(this);
-  }
 }

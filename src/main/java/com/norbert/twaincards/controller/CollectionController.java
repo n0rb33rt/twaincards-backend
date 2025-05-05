@@ -60,6 +60,12 @@ public class CollectionController {
     return ResponseEntity.ok(collectionService.searchUserCollections(query, pageable));
   }
 
+  @GetMapping("/user/recent")
+  public ResponseEntity<List<CollectionDTO>> getRecentCollections(@RequestParam(defaultValue = "5") int limit) {
+    log.info("Request to get recent collections with limit: {}", limit);
+    return ResponseEntity.ok(collectionService.getRecentCollectionsByUser(limit));
+  }
+
   @PostMapping
   public ResponseEntity<CollectionDTO> createCollection(@RequestBody @Valid CollectionDTO collectionDTO) {
     log.info("Request to create new collection");
@@ -81,5 +87,12 @@ public class CollectionController {
     log.info("Request to delete collection with id: {}", id);
     collectionService.deleteCollection(id);
     return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/{id}/users-count")
+  public ResponseEntity<Integer> getCollectionUsersCount(@PathVariable Long id) {
+    log.info("Request to get the number of users for collection: {}", id);
+    Integer usersCount = collectionService.getCollectionUsersCount(id);
+    return ResponseEntity.ok(usersCount);
   }
 }

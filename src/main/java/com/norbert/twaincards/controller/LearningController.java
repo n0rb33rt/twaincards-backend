@@ -30,10 +30,8 @@ public class LearningController {
   }
 
   @GetMapping("/cards-for-review")
-  public ResponseEntity<List<LearningProgressDTO>> getCardsForReview(
-          @RequestParam(defaultValue = "10") int limit) {
-    log.info("Request to get cards for review with limit: {}", limit);
-    return ResponseEntity.ok(learningService.getCardsForReview(limit));
+  public ResponseEntity<List<LearningProgressDTO>> getCardsForReview() {
+    return ResponseEntity.ok(learningService.getCardsForReview());
   }
 
   @GetMapping("/cards-for-review/collection/{collectionId}")

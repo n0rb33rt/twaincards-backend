@@ -2,8 +2,8 @@ package com.norbert.twaincards.repository;
 
 import com.norbert.twaincards.entity.Card;
 import com.norbert.twaincards.entity.LearningHistory;
-import com.norbert.twaincards.entity.LearningHistory.ActionType;
 import com.norbert.twaincards.entity.User;
+import com.norbert.twaincards.entity.enumeration.ActionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -108,11 +108,17 @@ public interface LearningHistoryRepository extends JpaRepository<LearningHistory
           @Param("startDate") LocalDateTime startDate,
           @Param("endDate") LocalDateTime endDate);
 
+
+  Long countByUserIdAndPerformedAtBetween(Long userId, LocalDateTime start, LocalDateTime end);
+
+
+  long countByStudySessionIdAndActionType(Long sessionId, ActionType actionType);
+
+  long countByStudySessionIdAndActionTypeAndIsCorrect(Long sessionId, ActionType actionType, Boolean isCorrect);
+
   /**
-   * Отримання середнього часу відповіді користувача
-   * @param user користувач
-   * @return середній час відповіді в мілісекундах
+   * Видалення всіх записів історії для картки
+   * @param card картка
    */
-  @Query("SELECT AVG(lh.responseTimeMs) FROM LearningHistory lh WHERE lh.user = :user AND lh.actionType = 'REVIEW'")
-  Double getAverageResponseTime(@Param("user") User user);
+  void deleteByCard(Card card);
 }

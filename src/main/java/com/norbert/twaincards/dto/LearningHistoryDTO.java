@@ -31,9 +31,7 @@ public class LearningHistoryDTO {
   private Boolean isCorrect;
   private LocalDateTime performedAt;
 
-  /**
-   * DTO для статистики вивчення за днями
-   */
+
   @Data
   @Builder
   @NoArgsConstructor
@@ -58,9 +56,7 @@ public class LearningHistoryDTO {
     private Long totalCorrectAnswers;
     private Long totalIncorrectAnswers;
     private Double successRate;
-    private Double averageResponseTimeMs;
     private Long uniqueCardsStudied;
     private Integer studySessionsCount;
-    private Integer totalStudyTimeMinutes;
   }
 }

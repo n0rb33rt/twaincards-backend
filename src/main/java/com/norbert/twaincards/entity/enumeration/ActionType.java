@@ -1,7 +1,6 @@
 package com.norbert.twaincards.entity.enumeration;
 
 public enum ActionType {
-
   CREATE,
 
   VIEW,
@@ -9,7 +8,6 @@ public enum ActionType {
   REVIEW,
 
   EDIT,
-
 
   DELETE
 }
