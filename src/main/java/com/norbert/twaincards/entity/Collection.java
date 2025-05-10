@@ -61,5 +61,17 @@ public class Collection {
   @EqualsAndHashCode.Exclude
   @Builder.Default
   private Set<CollectionUserUsage> userUsages = new HashSet<>();
+  
+  @ManyToMany(mappedBy = "studiedCollections")
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
+  @Builder.Default
+  private Set<StudySession> studySessions = new HashSet<>();
 
+  @PreRemove
+  private void removeCollectionFromStudySessions() {
+    for (StudySession session : studySessions) {
+      session.getStudiedCollections().remove(this);
+    }
+  }
 }

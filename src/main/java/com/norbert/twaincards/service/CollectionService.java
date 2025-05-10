@@ -193,16 +193,7 @@ public class CollectionService {
       throw new AccessDeniedException("You don't have permission to delete this collection");
     }
 
-    // First, remove the cards from the collection
-    Set<Card> cards = new HashSet<>(collection.getCards());
-    for (Card card : cards) {
-      // Handle learning history separately to avoid ConcurrentModificationException
-      learningHistoryRepository.deleteByCard(card);
-    }
-    
-    // Remove all references from study sessions
-    studySessionRepository.removeCollectionFromAllStudySessions(id);
-
+    // The collection will handle removing itself from study sessions via @PreRemove
     collectionRepository.delete(collection);
     log.info("Collection deleted successfully with id: {}", id);
   }

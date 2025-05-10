@@ -132,7 +132,7 @@ public class UserService {
 
   private UserDTO convertToDto(User user) {
     UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-
+    userDTO.setRole(user.getRole().getName());
     if (user.getStatistics() != null) {
       userDTO.setTotalCards(user.getStatistics().getTotalCards());
       userDTO.setLearnedCards(user.getStatistics().getLearnedCards());
