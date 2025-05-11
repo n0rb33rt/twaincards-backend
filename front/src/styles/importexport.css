@@ -1,0 +1,347 @@
+/* src/styles/importexport.css */
+.import-export-container {
+  display: flex;
+  gap: var(--spacing-3);
+  margin: var(--spacing-2) 0;
+}
+
+/* Main Buttons */
+.export-btn,
+.import-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  min-width: 120px;
+  border: 1px solid var(--neutral-300);
+  background-color: var(--neutral-100);
+  color: var(--text-primary);
+}
+
+.export-btn {
+  border-left: 3px solid #28a745; /* Green for CSV */
+}
+
+.import-btn {
+  border-left: 3px solid #28a745; /* Green for CSV */
+}
+
+.export-btn:hover,
+.import-btn:hover {
+  background-color: var(--neutral-200);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn:disabled,
+.import-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.export-btn .icon, .import-btn .icon {
+  margin-right: 6px;
+}
+
+/* Dropdown Menus - Basic Structure */
+.hover-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.hover-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  min-width: 120px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  z-index: 1000;
+  margin-top: 5px;
+  border: 1px solid #e0e0e0;
+  display: none;
+}
+
+/* Show dropdown on hover */
+.hover-dropdown:hover .hover-dropdown-menu {
+  display: block;
+}
+
+/* Dropdown Items */
+.dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Format specific colors */
+.format-csv {
+  border-left: 3px solid #28a745;
+}
+
+.format-json {
+  border-left: 3px solid #ffc107;
+}
+
+.format-xml {
+  border-left: 3px solid #17a2b8;
+}
+
+/* Collection Actions Menu */
+.collection-actions-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-trigger {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.menu-trigger:hover {
+  background-color: #f5f5f5;
+}
+
+.menu-dots {
+  font-size: 18px;
+  font-weight: bold;
+  color: #666;
+}
+
+.actions-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  min-width: 180px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  z-index: 1000;
+  border: 1px solid #e0e0e0;
+  margin-top: 5px;
+}
+
+.action-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.action-item:hover {
+  background-color: #f5f5f5;
+}
+
+.delete-action {
+  color: #dc3545;
+}
+
+.delete-action:hover {
+  background-color: #ffeaed;
+}
+
+/* Action dropdowns in collection menu */
+.action-dropdown-wrapper {
+  position: relative;
+  display: block;
+}
+
+.action-dropdown-trigger {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.action-dropdown-trigger:hover {
+  background-color: #f5f5f5;
+}
+
+.action-dropdown-menu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background-color: white;
+  min-width: 120px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  z-index: 1001;
+  border: 1px solid #e0e0e0;
+  display: none;
+}
+
+/* Make right side menus appear correctly */
+.right-side-menu {
+  left: auto;
+  right: 100%;
+}
+
+/* Show on hover */
+.action-dropdown-wrapper:hover .action-dropdown-menu {
+  display: block;
+}
+
+/* Dropdown Button Styles */
+.dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 8px 15px;
+  background-color: var(--primary-500);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.dropdown-btn:hover {
+  background-color: var(--primary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-btn:disabled {
+  background-color: var(--neutral-300);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.dropdown-btn .icon {
+  margin-right: 6px;
+}
+
+/* Container for hover dropdowns */
+.hover-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Right-side dropdown menu */
+.right-side-menu {
+  top: -5px;
+  left: 100%;
+}
+
+/* Dropdown section styles */
+.dropdown-section {
+  padding: var(--spacing-2) 0;
+}
+
+.dropdown-section-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--neutral-600);
+  padding: var(--spacing-2) var(--spacing-3);
+  text-transform: uppercase;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--neutral-200);
+  margin: var(--spacing-1) 0;
+}
+
+/* Format icons and styling */
+.dropdown-item::before,
+.hover-dropdown-menu .dropdown-item::before {
+  margin-right: var(--spacing-2);
+  font-weight: bold;
+  display: inline-block;
+  width: 40px;
+  text-align: center;
+}
+
+/* Export format icons */
+.hover-dropdown:first-child .dropdown-item:nth-child(1)::before,
+.dropdown-section:first-child .dropdown-item:nth-child(2)::before {
+  content: "CSV";
+  color: var(--primary-color);
+}
+
+.hover-dropdown:first-child .dropdown-item:nth-child(2)::before,
+.dropdown-section:first-child .dropdown-item:nth-child(3)::before {
+  content: "JSON";
+  color: var(--secondary-color);
+}
+
+.hover-dropdown:first-child .dropdown-item:nth-child(3)::before,
+.dropdown-section:first-child .dropdown-item:nth-child(4)::before {
+  content: "XML";
+  color: var(--accent-color);
+}
+
+/* Import format icons */
+.hover-dropdown:nth-child(2) .dropdown-item:nth-child(1)::before {
+  content: "CSV";
+  color: var(--primary-color);
+}
+
+.hover-dropdown:nth-child(2) .dropdown-item:nth-child(2)::before {
+  content: "JSON";
+  color: var(--secondary-color);
+}
+
+.hover-dropdown:nth-child(2) .dropdown-item:nth-child(3)::before {
+  content: "XML";
+  color: var(--accent-color);
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+  .import-export-container {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+  
+  .export-btn,
+  .import-btn {
+    width: 100%;
+  }
+} 

@@ -1,0 +1,367 @@
+/* src/styles/header.css */
+.app-header {
+    background-color: white;
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+}
+
+.header-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: var(--spacing-3) var(--spacing-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo-container {
+    flex-shrink: 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: transform var(--transition-fast);
+}
+
+.logo:hover {
+    transform: scale(1.05);
+    text-decoration: none;
+}
+
+.logo-text {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-left: var(--spacing-2);
+}
+
+.mobile-menu-button {
+    display: none;
+    background: none;
+    border: none;
+    padding: var(--spacing-2);
+    cursor: pointer;
+}
+
+.menu-icon {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background-color: var(--neutral-800);
+    position: relative;
+    transition: background-color var(--transition-fast);
+}
+
+.menu-icon::before,
+.menu-icon::after {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 3px;
+    background-color: var(--neutral-800);
+    position: absolute;
+    transition: transform var(--transition-fast);
+}
+
+.menu-icon::before {
+    top: -8px;
+}
+
+.menu-icon::after {
+    bottom: -8px;
+}
+
+.mobile-menu-button.active .menu-icon {
+    background-color: transparent;
+}
+
+.mobile-menu-button.active .menu-icon::before {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.mobile-menu-button.active .menu-icon::after {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    margin: 0 var(--spacing-2);
+    position: relative;
+}
+
+.nav-link {
+    display: block;
+    padding: var(--spacing-2) var(--spacing-3);
+    color: var(--neutral-700);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.nav-link.active {
+    color: var(--primary-color);
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: none;
+    border: none;
+    color: var(--neutral-700);
+    font-family: var(--font-family);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.dropdown-toggle::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: var(--spacing-1);
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid currentColor;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 200px;
+    padding: var(--spacing-2) 0;
+    background-color: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    list-style: none;
+    z-index: var(--z-dropdown);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+}
+
+/* Show dropdown menu when it has the 'show' class */
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: block;
+    padding: var(--spacing-2) var(--spacing-4);
+    color: var(--neutral-700);
+    text-decoration: none;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+    text-align: left;
+    width: 100%;
+    background: none;
+    border: none;
+    font-family: var(--font-family);
+    cursor: pointer;
+    font-size: var(--font-size-md);
+}
+
+.dropdown-item:hover {
+    background-color: var(--neutral-100);
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        padding: var(--spacing-3) var(--spacing-4);
+    }
+
+    .mobile-menu-button {
+        display: block;
+    }
+
+    .main-nav {
+        position: fixed;
+        top: 64px; /* Height of header */
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 64px);
+        background-color: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: var(--spacing-4);
+        transform: translateX(100%);
+        transition: transform var(--transition-normal);
+        z-index: var(--z-fixed);
+    }
+
+    .main-nav.mobile-open {
+        transform: translateX(0);
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-item {
+        margin: var(--spacing-2) 0;
+        width: 100%;
+    }
+
+    .nav-link {
+        padding: var(--spacing-3);
+        width: 100%;
+        text-align: center;
+    }
+
+    .dropdown {
+        width: 100%;
+    }
+
+    .dropdown-toggle {
+        width: 100%;
+        justify-content: center;
+        padding: var(--spacing-3);
+    }
+
+    .dropdown-menu {
+        position: static;
+        width: 100%;
+        box-shadow: none;
+        opacity: 0;
+        visibility: hidden;
+        transform: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: all var(--transition-normal);
+    }
+
+    .dropdown-menu.show {
+        opacity: 1;
+        visibility: visible;
+        max-height: 500px;
+    }
+}
+
+/* src/styles/footer.css */
+.app-footer {
+    background-color: var(--neutral-800);
+    color: var(--neutral-200);
+    padding: var(--spacing-8) 0 var(--spacing-4);
+    margin-top: var(--spacing-8);
+}
+
+.footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-5);
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-6);
+    margin-bottom: var(--spacing-6);
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-heading {
+    font-size: var(--font-size-lg);
+    color: white;
+    margin-bottom: var(--spacing-4);
+}
+
+.footer-description {
+    color: var(--neutral-400);
+    margin-bottom: var(--spacing-4);
+    line-height: 1.6;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: var(--spacing-2);
+}
+
+.footer-link {
+    color: var(--neutral-300);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+    color: white;
+    text-decoration: none;
+}
+
+.footer-bottom {
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--neutral-700);
+    text-align: center;
+}
+
+.copyright {
+    color: var(--neutral-500);
+    font-size: var(--font-size-sm);
+}
+
+@media (max-width: 768px) {
+    .app-footer {
+        padding: var(--spacing-6) 0 var(--spacing-4);
+    }
+
+    .footer-container {
+        padding: 0 var(--spacing-4);
+    }
+
+    .footer-content {
+        gap: var(--spacing-5);
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Add this to your header.css file, wherever appropriate */
+.dropdown-divider {
+  height: 1px;
+  margin: 8px 0;
+  background-color: var(--neutral-300);
+  overflow: hidden;
+}
